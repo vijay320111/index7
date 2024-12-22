@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 共情对话交互</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f9f9f9;
+    }
+    #start-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #007bff;
+      color: white;
+      text-align: center;
+    }
+    #start-container button {
+      padding: 15px 30px;
+      margin-top: 20px;
+      background-color: #fff;
+      color: #007bff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #start-container button:hover {
+      background-color: #f0f0f0;
+    }
+    #chat-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 80%;
+      max-width: 600px;
+      margin-top: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      overflow-y: auto;
+      max-height: 60vh;
+    }
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      width: fit-content;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .user {
+      background: #d1f4ff;
+      align-self: flex-end;
+    }
+    .ai {
+      background: #f1f1f1;
+      align-self: flex-start;
+      display: flex;
+      align-items: center;
+    }
+    .ai img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    #input-section {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    select {
+      width: 70%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <!-- 开始体验界面 -->
+  <div id="start-container">
+    <h1>欢迎来到 AI 共情对话</h1>
+    <p>点击下方按钮，开始与 AI 的交互体验。</p>
+    <button id="start-btn">开始体验</button>
+  </div>
+
+  <!-- 对话界面 -->
+  <div id="chat-container">
+    <!-- 对话内容动态加载 -->
+  </div>
+  <div id="input-section">
+    <select id="user-input">
+      <option value="" disabled selected>请选择输入...</option>
+      <option value="我很难过，这种感觉让我喘不过气来。">我很难过，这种感觉让我喘不过气来。</option>
+      <option value="我觉得自己做得不够好，很自责。">我觉得自己做得不够好，很自责。</option>
+      <option value="我想努力，但总是觉得力不从心。">我想努力，但总是觉得力不从心。</option>
+      <option value="我感到迷茫，不知道接下来该怎么办。">我感到迷茫，不知道接下来该怎么办。</option>
+    </select>
+    <button id="send-btn">发送</button>
+  </div>
+
+  <script>
+    // 预设 AI 的自我介绍与回复语料
+    const aiIntro = "你好！我是你的AI共情助手，很高兴和你对话。我会倾听你的想法，并与你一起探索可能的解决方案。";
+    const aiReplies = [
+      "听起来你感到很焦虑和迷茫，这种状态很难受吧？",
+      "你提到通过努力改变现状，但可能遇到了很多困难。",
+      "你的感觉说明你在意自己的表现和未来，这本身是一件积极的事情。",
+      "我们可以一起探索可能的解决办法，让你找到方向和动力。"
+    ];
+
+    // 记录当前回复进度
+    let replyIndex = 0;
+
+    // 选择 DOM 元素
+    const startContainer = document.getElementById("start-container");
+    const chatContainer = document.getElementById("chat-container");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    // 添加消息到聊天界面
+    function addMessage(content, type, gradual = false, isAI = false) {
+      const message = document.createElement("div");
+      message.className = `message ${type}`;
+      if (isAI) {
+        const img = document.createElement("img");
+        img.src = "https://github.com/vijay320111/chat2/raw/main/tongbei.png"; // 使用正确的图片 URL
+        message.appendChild(img);
+      }
+      const text = document.createElement("span");
+      message.appendChild(text);
+      chatContainer.appendChild(message);
+
+      // 临时禁用渐变输出，直接显示内容
+      text.textContent = content;
+
+      chatContainer.scrollTop = chatContainer.scrollHeight; // 保持滚动到底部
+    }
+
+    // 开始体验按钮点击事件
+    document.getElementById("start-btn").addEventListener("click", () => {
+      startContainer.style.display = "none";
+      chatContainer.style.display = "flex";
+
+      // AI 自我介绍
+      setTimeout(() => {
+        addMessage(aiIntro, "ai", true, true); // 使用头像并渐变显示
+      }, 500);
+    });
+
+    // 发送消息
+    sendBtn.addEventListener("click", () => {
+      const userText = userInput.value.trim();
+      if (!userText) return; // 如果没有选择，直接返回
+
+      // 用户消息
+      addMessage(userText, "user");
+      userInput.value = ""; // 清空下拉框
+
+      // AI 回复
+      if (replyIndex < aiReplies.length) {
+        setTimeout(() => {
+          addMessage(aiReplies[replyIndex], "ai", true, true); // 使用头像并渐变显示
+          replyIndex++;
+        }, 1000); // 模拟 AI 回复的延迟
+      } else {
+        setTimeout(() => {
+          addMessage("目前的对话已经结束，如果需要更多帮助，请联系相关人员。", "ai", true, true);
+        }, 1000);
+      }
+    });
+  </script>
+</body>
+</html>
