@@ -1,198 +1,461 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI 共情对话交互</title>
+  <title>AI共情能力提升助手</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
       margin: 0;
       padding: 0;
+    }
+    /* 前置页面样式 */
+    #pre-page {
       display: flex;
       flex-direction: column;
       align-items: center;
-      background-color: #f9f9f9;
-    }
-    #start-container {
-      display: flex;
-      flex-direction: column;
       justify-content: center;
-      align-items: center;
       height: 100vh;
-      background-color: #007bff;
-      color: white;
-      text-align: center;
+      background-color: #f0f8ff;
     }
-    #start-container button {
-      padding: 15px 30px;
-      margin-top: 20px;
-      background-color: #fff;
-      color: #007bff;
+    #pre-page h1 {
+      color: #2e8b57;
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+    #start-btn {
+      background-color: #2e8b57;
+      color: #ffffff;
       border: none;
-      border-radius: 8px;
-      font-size: 16px;
+      border-radius: 50px;
+      padding: 15px 30px;
+      font-size: 18px;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
-    #start-container button:hover {
-      background-color: #f0f0f0;
+    #start-btn:hover {
+      background-color: #3cb371;
     }
-    #chat-container {
+    /* 聊天界面样式 */
+    #chat-interface {
       display: none;
+      height: 100vh;
+      display: flex;
       flex-direction: column;
-      align-items: center;
-      width: 80%;
-      max-width: 600px;
-      margin-top: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      background-color: #2e8b57;
+      color: #ffffff;
+      padding: 10px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .client-info {
+      width: 30%;
+      background-color: #ffffff;
       padding: 10px;
       overflow-y: auto;
-      max-height: 60vh;
+      border-right: 1px solid #ccc;
+    }
+    .client-info h2 {
+      color: #2e8b57;
+      margin-top: 0;
+    }
+    .client-info p {
+      line-height: 1.6;
+      text-indent: 2em;
+    }
+    .chat-section {
+      width: 70%;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-container {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
     }
     .message {
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 8px;
-      width: fit-content;
-      max-width: 80%;
-      word-wrap: break-word;
-    }
-    .user {
-      background: #d1f4ff;
-      align-self: flex-end;
-    }
-    .ai {
-      background: #f1f1f1;
-      align-self: flex-start;
       display: flex;
-      align-items: center;
+      margin-bottom: 10px;
+      align-items: flex-end;
     }
-    .ai img {
-      width: 40px;
-      height: 40px;
+    .message.ai {
+      justify-content: flex-start;
+    }
+    .message.user {
+      justify-content: flex-end;
+    }
+    .bubble {
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 20px;
+      position: relative;
+      background-color: #e0f7fa;
+      color: #333333;
+      font-size: 16px;
+      line-height: 1.4;
+      display: inline-block;
+    }
+    .message.ai .bubble {
+      background-color: #e0f7fa;
+    }
+    .message.user .bubble {
+      background-color: #d3d3d3;
+    }
+    .bubble::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      width: 0;
+      height: 0;
+    }
+    .message.ai .bubble::after {
+      left: -10px;
+      border-left: 10px solid transparent;
+      border-right: 10px solid #e0f7fa;
+      border-top: 10px solid #e0f7fa;
+      border-bottom: 10px solid transparent;
+    }
+    .message.user .bubble::after {
+      right: -10px;
+      border-left: 10px solid #d3d3d3;
+      border-right: 10px solid transparent;
+      border-top: 10px solid #d3d3d3;
+      border-bottom: 10px solid transparent;
+    }
+    #options-container {
+      padding: 10px;
+      text-align: center;
+    }
+    .option-btn {
+      background-color: #2e8b57;
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-align: center;
+      margin: 10px;
+    }
+    .option-btn:hover {
+      background-color: #3cb371;
+    }
+    .stage-title {
+      text-align: center;
+      font-size: 20px;
+      color: #2e8b57;
+      margin: 20px 0;
+      font-weight: bold; /* 加粗 */
+    }
+    .ai-avatar {
+      width: 50px; /* 调整宽度 */
+      height: 50px; /* 调整高度 */
       border-radius: 50%;
       margin-right: 10px;
     }
-    #input-section {
-      margin-top: 20px;
+    .thinking {
       display: flex;
-      justify-content: center;
       align-items: center;
     }
-    select {
-      width: 70%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+    .dots {
+      display: inline-block;
+      margin-left: 5px;
     }
-    button {
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: #888;
+      border-radius: 50%;
+      margin: 0 2px;
+      opacity: 0;
+      animation: blink 1s infinite;
+    }
+    .dot:nth-child(1) {
+      animation-delay: 0s;
+    }
+    .dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes blink {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    /* 弹窗样式 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 30px;
+      border: 1px solid #888;
+      width: 50%;
+      max-width: 500px;
+      text-align: center;
+      border-radius: 10px;
+      position: relative;
+    }
+    .modal-content h2 {
+      margin-top: 0;
+    }
+    #final-message {
+      color: red;
+      font-weight: bold;
+    }
+    #close-modal-btn {
+      margin-top: 20px;
       padding: 10px 20px;
-      margin-left: 10px;
-      background-color: #007bff;
-      color: #fff;
+      background-color: #2e8b57;
+      color: #ffffff;
       border: none;
-      border-radius: 4px;
+      border-radius: 5px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #0056b3;
+    #close-modal-btn:hover {
+      background-color: #3cb371;
     }
   </style>
 </head>
 <body>
-  <!-- 开始体验界面 -->
-  <div id="start-container">
-    <h1>欢迎来到 AI 共情对话</h1>
-    <p>点击下方按钮，开始与 AI 的交互体验。</p>
-    <button id="start-btn">开始体验</button>
+  <!-- 前置页面 -->
+  <div id="pre-page">
+    <h1>欢迎使用共情能力训练</h1>
+    <button id="start-btn">开始交互</button>
   </div>
 
-  <!-- 对话界面 -->
-  <div id="chat-container">
-    <!-- 对话内容动态加载 -->
+  <!-- 聊天界面 -->
+  <div id="chat-interface">
+    <!-- 标题 -->
+    <div class="header">
+      <h1>AI共情能力提升助手</h1>
+    </div>
+    <!-- 内容区域 -->
+    <div class="content">
+      <!-- 当事人情况 -->
+      <div class="client-info">
+        <h2>当事人情况</h2>
+        <p>我特别喜欢用狂吃的方式安慰自己。尤其上了在大学，感觉来自四面八方的压力，甚至比高中的压力还大，不仅有学习上的事儿、还要跟人打交道。参加各种社团、学生会等组织，感觉还要被迫合群。这些都让我越来越焦虑，我一焦虑、孤单或者难过，就会买好多高热量、高碳水一类的食物，然后看着一些下饭剧，边吃边看，这个时候我就觉得自己很快乐。但是我的理智告诉我，这些不健康，对身体也不好，这是个坏习惯，我应该自律、应该摒弃。可我就是管不住自己。我也试过运动啊，跟朋友唠嗑啥的，都是暂时有用，后面又会接着吃，我最近因为这个事情挺愁的，不知道该怎么办了。</p>
+      </div>
+      <!-- 聊天区域 -->
+      <div class="chat-section">
+        <div class="chat-container" id="chat-container">
+          <!-- 聊天记录将通过JavaScript动态添加 -->
+        </div>
+        <!-- 选项按钮 -->
+        <div id="options-container">
+          <!-- 选项按钮将通过JavaScript动态添加 -->
+        </div>
+      </div>
+    </div>
   </div>
-  <div id="input-section">
-    <select id="user-input">
-      <option value="" disabled selected>请选择输入...</option>
-      <option value="我很难过，这种感觉让我喘不过气来。">我很难过，这种感觉让我喘不过气来。</option>
-      <option value="我觉得自己做得不够好，很自责。">我觉得自己做得不够好，很自责。</option>
-      <option value="我想努力，但总是觉得力不从心。">我想努力，但总是觉得力不从心。</option>
-      <option value="我感到迷茫，不知道接下来该怎么办。">我感到迷茫，不知道接下来该怎么办。</option>
-    </select>
-    <button id="send-btn">发送</button>
+
+  <!-- 弹窗 -->
+  <div id="modal" class="modal">
+    <div class="modal-content" id="modal-content">
+      <h2>本次交互已结束</h2>
+      <p id="final-message"></p>
+      <button id="close-modal-btn">关闭</button>
+    </div>
   </div>
 
   <script>
-    // 预设 AI 的自我介绍与回复语料
-    const aiIntro = "你好！我是你的AI共情助手，很高兴和你对话。我会倾听你的想法，并与你一起探索可能的解决方案。";
-    const aiReplies = [
-      "听起来你感到很焦虑和迷茫，这种状态很难受吧？",
-      "你提到通过努力改变现状，但可能遇到了很多困难。",
-      "你的感觉说明你在意自己的表现和未来，这本身是一件积极的事情。",
-      "我们可以一起探索可能的解决办法，让你找到方向和动力。"
+    const conversations = [
+      { role: 'ai', text: '您好，我是您的AI共情能力提升助手。' },
+      { role: 'ai', text: '在本次互动中，我将帮助您提升您的共情能力。' },
+      { role: 'stage', text: '⭐ 阶段一：情绪识别与反映 😊' },
+      { role: 'user', options: ['焦虑、孤单、难过。'] },
+      { role: 'ai', text: '这些情绪出现的频率高吗？' },
+      { role: 'user', options: ['很频繁。'] },
+      { role: 'ai', text: '了解了，那么这些情绪是如何影响您的日常生活的呢？' },
+      { role: 'stage', text: '🌟 阶段二：探索情绪背后的原因 🤔' },
+      { role: 'ai', text: '您能详细描述一下这些情绪背后的原因吗？' },
+      { role: 'user', options: ['我觉得是因为外界的压力。'] },
+      { role: 'ai', text: '在这些情况下，您通常会怎么做来应对这些情绪？' },
+      { role: 'user', options: ['我会暴饮暴食。'] },
+      { role: 'ai', text: '这确实是一个常见的应对机制。' },
+      { role: 'stage', text: '✨ 阶段三：形象地表达共情 🤗' },
+      { role: 'ai', text: '您可以想象一下，如果您的朋友也有类似的情况，您会怎么表达对他们的理解和支持呢？' },
+      { role: 'user', options: ['我会告诉他们我理解他们的感受。'] },
+      { role: 'ai', text: '太棒了，这是一种很好的表达方式。' },
+      { role: 'user', options: ['明白。'] },
+      { role: 'ai', text: '本次对话已结束，请按照指示进行下一步操作。' }
     ];
 
-    // 记录当前回复进度
-    let replyIndex = 0;
+    let currentIndex = 0;
+    const prePage = document.getElementById('pre-page');
+    const startBtn = document.getElementById('start-btn');
+    const chatInterface = document.getElementById('chat-interface');
+    const chatContainer = document.getElementById('chat-container');
+    const optionsContainer = document.getElementById('options-container');
+    const modal = document.getElementById('modal');
+    const finalMessage = document.getElementById('final-message');
 
-    // 选择 DOM 元素
-    const startContainer = document.getElementById("start-container");
-    const chatContainer = document.getElementById("chat-container");
-    const userInput = document.getElementById("user-input");
-    const sendBtn = document.getElementById("send-btn");
-
-    // 添加消息到聊天界面
-    function addMessage(content, type, gradual = false, isAI = false) {
-      const message = document.createElement("div");
-      message.className = `message ${type}`;
-      if (isAI) {
-        const img = document.createElement("img");
-        img.src = "https://github.com/vijay320111/chat2/raw/main/tongbei.png"; // 使用正确的图片 URL
-        message.appendChild(img);
-      }
-      const text = document.createElement("span");
-      message.appendChild(text);
-      chatContainer.appendChild(message);
-
-      // 临时禁用渐变输出，直接显示内容
-      text.textContent = content;
-
-      chatContainer.scrollTop = chatContainer.scrollHeight; // 保持滚动到底部
-    }
-
-    // 开始体验按钮点击事件
-    document.getElementById("start-btn").addEventListener("click", () => {
-      startContainer.style.display = "none";
-      chatContainer.style.display = "flex";
-
-      // AI 自我介绍
-      setTimeout(() => {
-        addMessage(aiIntro, "ai", true, true); // 使用头像并渐变显示
-      }, 500);
+    startBtn.addEventListener('click', () => {
+      prePage.style.display = 'none';
+      chatInterface.style.display = 'flex';
+      startConversation();
     });
 
-    // 发送消息
-    sendBtn.addEventListener("click", () => {
-      const userText = userInput.value.trim();
-      if (!userText) return; // 如果没有选择，直接返回
+    function simulateThinking(callback) {
+      const thinkingMessage = document.createElement('div');
+      thinkingMessage.className = 'message ai thinking';
+      const avatar = document.createElement('img');
+      avatar.src = 'https://github.com/vijay320111/chat2/raw/main/tongbei.png';
+      avatar.className = 'ai-avatar';
+      thinkingMessage.appendChild(avatar);
 
-      // 用户消息
-      addMessage(userText, "user");
-      userInput.value = ""; // 清空下拉框
-
-      // AI 回复
-      if (replyIndex < aiReplies.length) {
-        setTimeout(() => {
-          addMessage(aiReplies[replyIndex], "ai", true, true); // 使用头像并渐变显示
-          replyIndex++;
-        }, 1000); // 模拟 AI 回复的延迟
-      } else {
-        setTimeout(() => {
-          addMessage("目前的对话已经结束，如果需要更多帮助，请联系相关人员。", "ai", true, true);
-        }, 1000);
+      const dotsContainer = document.createElement('div');
+      dotsContainer.className = 'dots';
+      for(let i=0; i<3; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        dotsContainer.appendChild(dot);
       }
+      thinkingMessage.appendChild(dotsContainer);
+      chatContainer.appendChild(thinkingMessage);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      // 模拟思考过程
+      setTimeout(() => {
+        chatContainer.removeChild(thinkingMessage);
+        callback();
+      }, 2000);
+    }
+
+    function displayMessage(role, text) {
+      const messageEl = document.createElement('div');
+      messageEl.className = `message ${role}`;
+      if (role === 'ai') {
+        const avatar = document.createElement('img');
+        avatar.src = 'https://github.com/vijay320111/chat2/raw/main/tongbei.png';
+        avatar.className = 'ai-avatar';
+        messageEl.appendChild(avatar);
+        const bubbleEl = document.createElement('div');
+        bubbleEl.className = 'bubble';
+        messageEl.appendChild(bubbleEl);
+
+        let index = 0;
+        function typeCharacter() {
+          bubbleEl.textContent += text.charAt(index);
+          index++;
+          if (index < text.length) {
+            setTimeout(typeCharacter, 50);
+          } else {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            moveToNext();
+          }
+        }
+        typeCharacter();
+      } else {
+        const bubbleEl = document.createElement('div');
+        bubbleEl.className = 'bubble';
+        bubbleEl.textContent = text;
+        messageEl.appendChild(bubbleEl);
+        chatContainer.appendChild(messageEl);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        // 用户消息发送后，等待片刻再进入下一步
+        setTimeout(() => {
+          moveToNext();
+        }, 500);
+      }
+      chatContainer.appendChild(messageEl);
+      // 确保聊天容器滚动到底部
+      setTimeout(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        optionsContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 0);
+    }
+
+    function displayStageTitle(text) {
+      const stageTitle = document.createElement('div');
+      stageTitle.className = 'stage-title';
+      stageTitle.textContent = text;
+      chatContainer.appendChild(stageTitle);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      moveToNext();
+    }
+
+    function displayUserOption(options) {
+      optionsContainer.innerHTML = '';
+      const optionBtn = document.createElement('button');
+      optionBtn.className = 'option-btn';
+      optionBtn.textContent = options[0];
+      optionsContainer.appendChild(optionBtn);
+
+      optionBtn.addEventListener('click', () => {
+        displayMessage('user', options[0]);
+        optionsContainer.innerHTML = '';
+      });
+    }
+
+    function moveToNext() {
+      currentIndex++;
+      if (currentIndex < conversations.length) {
+        const item = conversations[currentIndex];
+        if (item.role === 'ai') {
+          simulateThinking(() => {
+            displayMessage('ai', item.text);
+          });
+        } else if (item.role === 'user') {
+          displayUserOption(item.options);
+          // 确保选项按钮在视野内
+          optionsContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        } else if (item.role === 'stage') {
+          displayStageTitle(item.text);
+        }
+      } else {
+        optionsContainer.innerHTML = '';
+        showModal(); // 显示弹窗
+      }
+    }
+
+    // 开始对话
+    function startConversation() {
+      const item = conversations[currentIndex];
+      if (item.role === 'ai') {
+        simulateThinking(() => {
+          displayMessage('ai', item.text);
+        });
+      } else if (item.role === 'stage') {
+        displayStageTitle(item.text);
+      } else if (item.role === 'user') {
+        displayUserOption(item.options);
+      }
+    }
+
+    // 显示弹窗
+    function showModal() {
+      // 获取AI最后一句话
+      const lastAIMessage = conversations[conversations.length - 1].text;
+      finalMessage.textContent = lastAIMessage;
+
+      modal.style.display = 'block';
+    }
+
+    // 添加关闭弹窗的事件
+    document.getElementById('close-modal-btn').addEventListener('click', function() {
+      modal.style.display = 'none';
     });
   </script>
 </body>
